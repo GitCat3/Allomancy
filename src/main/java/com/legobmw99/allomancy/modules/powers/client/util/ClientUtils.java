@@ -9,6 +9,8 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
@@ -19,14 +21,46 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.LinkedList;
+import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientUtils {
 
     private static Minecraft mc = Minecraft.getInstance();
     private static final LocalPlayer player = mc.player;
+
+    public static HitResult isIntersectingBlockRaycastIDK(Set<MetalBlockBlob> points) {
+        mc = Minecraft.getInstance();
+        Vec3 playerPos;
+        Entity cameraEntity = mc.getCameraEntity();
+        if(cameraEntity != null) {
+            var cameraLookVector = cameraEntity.getDirection();
+            if(cameraLookVector == Direction.DOWN) {
+                playerPos = cameraEntity.getPosition(mc.getFrameTime());
+            }
+            else {
+                playerPos = cameraEntity.getEyePosition(mc.getFrameTime());
+            }
+            for(MetalBlockBlob blockBlob: points) {
+                var blockBlobCenter = blockBlob.getCenter();
+                var distance = blockBlobCenter.distanceTo(playerPos);
+                if(distance <= 2) {
+                    return new HitResult(blockBlobCenter) {
+                        @Override
+                        public @NotNull Type getType() {
+                            return Type.BLOCK;
+                        }
+                    };
+                }
+            }
+            return null;
+        }
+        return null;
+    }
 
     /**
      * Adapted from vanilla, allows getting mouseover at given distances

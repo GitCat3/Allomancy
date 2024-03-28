@@ -85,6 +85,9 @@ public class ClientEventHandler {
             if (this.mc.options.keyUse.isDown()) {
                 // Ray trace 20 blocks (or 40 if enhanced)
                 var trace = ClientUtils.getMouseOverExtended(20F * dist_modifier);
+                if(trace == null || !PowerUtils.isBlockStateMetal(this.mc.level.getBlockState(((BlockHitResult) trace).getBlockPos()))) {
+                    trace = ClientUtils.isIntersectingBlockRaycastIDK(this.metal_blobs);
+                }
                 // All steel pushing powers
                 metalPushPull(player, data, trace, Metal.STEEL, PowerUtils.PUSH);
                 // All brass powers
@@ -204,7 +207,7 @@ public class ClientEventHandler {
                 }
 
                 if (trace.getType() == HitResult.Type.BLOCK) {
-                    BlockPos bp = ((BlockHitResult) trace).getBlockPos();
+                    BlockPos bp = new BlockPos(trace.getLocation());
                     if (PowerUtils.isBlockStateMetal(this.mc.level.getBlockState(bp)) ||
                         (player.getMainHandItem().getItem() == CombatSetup.COIN_BAG.get() && player.isCrouching())) {
                         Network.sendToServer(new TryPushPullBlock(bp, direction * force_multiplier));
